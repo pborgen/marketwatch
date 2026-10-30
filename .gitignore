@@ -1,0 +1,32 @@
+.venv/
+vendor/
+node_modules/
+
+# Installed by skills.sh. skills-lock.json stays tracked so the set can be restored.
+.agents/
+
+# Written by mcp.sh. The uvx path is specific to this machine.
+# Rules in .cursor/rules stay committed.
+.cursor/mcp.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*tfplan*
+crash.log
+crash.*.log
+.terraform.tfstate.lock.info
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Local backend settings and secret tfvars. terraform.tfvars in this repo
+# only names the environment and region, so those files stay committed.
+backend.hcl
+*.auto.tfvars
+*.tfvars.json

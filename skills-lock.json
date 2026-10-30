@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "skills": {
+    "agentcore-browser-web-scraping": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/agentcore-browser-web-scraping/SKILL.md",
+      "computedHash": "f7a820d41d65d6bea2a802049fc300cb006f65e0747324b14ac74456df61783a"
+    },
+    "agentcore-mcp-oauth-facade": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/agentcore-mcp-oauth-facade/SKILL.md",
+      "computedHash": "2251e55e1ef91c2b487f0c6a055682fffd4e0fc5470654af6b7878419cdea753"
+    },
+    "agentic-responsible-ai-assessment": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/agentic-responsible-ai-assessment/SKILL.md",
+      "computedHash": "a856c6a0494d9101cf4504718fcd83c49e51a606b5c10dabd333365e120d458e"
+    },
+    "api-gateway-authorizer-security": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/api-gateway-authorizer-security/SKILL.md",
+      "computedHash": "96d5c574f714c511f08434abbc09f37004cfd118d156bdfae0ca64a8adbe2d94"
+    },
+    "aws-agentic-ai": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/aws-agentic-ai/SKILL.md",
+      "computedHash": "5b7a19ed9da91bb37e3c47e048e0bd943e88e39ab1f5a3dffb885e6b6e978319"
+    },
+    "aws-cdk-development": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/aws-cdk-development/SKILL.md",
+      "computedHash": "8c038bc5876ca4d1efcd332fa5aba2538237cf9096d6a00e0b6cd5b8a21ac840"
+    },
+    "aws-cost-operations": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/aws-cost-operations/SKILL.md",
+      "computedHash": "c52734885d31e31a385557fb62034f9765c229eb181f633b288d9c2c4d7fcead"
+    },
+    "aws-mcp-setup": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/aws-mcp-setup/SKILL.md",
+      "computedHash": "7275f8ceaca1c855aa779e6d5b2d472b1ba0bf88654b0b126f08c84d17b22c6f"
+    },
+    "cost-estimator": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/cost-estimator/SKILL.md",
+      "computedHash": "67420b2dc285a4aea6e684bf76b82a7ae67c10c06ec04c01e4622af791bf443e"
+    },
+    "create-install-scripts": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/create-install-scripts/SKILL.md",
+      "computedHash": "88288c433619df864574e23c31b31d920edefdfa5cb18ba7dd293c5f2e8a06a7"
+    },
+    "end-to-end-testing": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/end-to-end-testing/SKILL.md",
+      "computedHash": "60d39b5449a9a46097f4ded5de3eeb83c5df5ad4aa75e487594c16be15d3410a"
+    },
+    "security-scan": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/security-scan/SKILL.md",
+      "computedHash": "c0f31d289f58ca926080253ccc516ecb019bf53d191a9c52b3e884b029cfad5f"
+    },
+    "skill-creator": {
+      "source": "aws-samples/sample-strands-agents-agentskills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "computedHash": "272d984e884ac4eddca9c78730d2bdd60c0c14864ca35e166fed89553d7f9c97"
+    },
+    "strands-context-manager": {
+      "source": "aws-samples/sample-agent-skills-for-builders",
+      "sourceType": "github",
+      "skillPath": "skills/strands-context-manager/SKILL.md",
+      "computedHash": "8d53f5ece9dcbf8b09a4db195c268be88ef533482bc734efb6800556f9602ed9"
+    }
+  }
+}

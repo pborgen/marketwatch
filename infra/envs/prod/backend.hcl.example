@@ -1,0 +1,5 @@
+# Copy to backend.hcl, or re-run init.sh after AWS credentials work.
+# bucket is "<project>-tfstate-<account id>" from infra/bootstrap.
+# region must match aws_region in infra/bootstrap/terraform.tfvars.
+bucket = "marketwatch-tfstate-123456789012"
+region = "us-east-1"

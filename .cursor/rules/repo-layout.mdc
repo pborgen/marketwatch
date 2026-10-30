@@ -1,0 +1,23 @@
+---
+description: Python monorepo layout and Terraform apply boundary
+alwaysApply: true
+---
+
+# Repository layout
+
+This is a Python monorepo.
+
+- `apps/` holds deployable Python applications.
+- `packages/` holds shared Python libraries those apps import.
+- `infra/` holds Terraform. Environment roots are `infra/envs/dev` and `infra/envs/prod`. Shared modules go in `infra/modules`. `infra/bootstrap` creates the remote state bucket.
+- `scripts/init/` holds the programs called by `init.sh`.
+- The project virtualenv is `.venv`. The Strands runtime is installed from `vendor/`.
+
+Do not run `terraform apply` or `terraform destroy`. `terraform fmt`, `terraform validate`, `terraform plan`, and `terraform init` are fine.
+
+```
+apps/ingest/          # a deployable Python app
+packages/quotes/      # a shared library imported by apps
+infra/envs/dev/       # Terraform for the dev environment
+infra/modules/        # shared Terraform modules
+```
