@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# Remove the local files created by init.sh.
+# Remove the local files created by scripts/init/init.sh.
 #
 #   bash init_cleanup.sh
 #
-# The AWS CLI, Terraform, and uv stay installed. init.sh installs them only
-# when they are missing, and they are shared with the rest of this machine.
-# skills-lock.json stays, so skills.sh can install the same set again.
-# Terraform state and .terraform directories stay. init.sh does not apply
-# infrastructure.
+# The AWS CLI, Terraform, and uv stay installed. scripts/init/init.sh installs
+# them only when they are missing, and they are shared with the rest of this
+# machine. skills-lock.json stays, so scripts/init/skills.sh can install the same
+# set again.
+# Terraform state and .terraform directories stay. scripts/init/init.sh does not
+# apply infrastructure.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -38,7 +39,7 @@ skills=(
   skill-creator
 )
 
-echo "Removing agent skills installed by skills.sh..."
+echo "Removing agent skills installed by scripts/init/skills.sh..."
 for skill in "${skills[@]}"; do
   remove_path ".agents/skills/${skill}"
 done
@@ -56,7 +57,7 @@ if rmdir vendor 2>/dev/null; then
 fi
 remove_path ".venv"
 
-echo "Removing MCP servers written by mcp.sh..."
+echo "Removing MCP servers written by scripts/init/mcp.sh..."
 python3 - "$ROOT" <<'PY'
 import json
 import sys
@@ -85,7 +86,7 @@ elif removed:
     print("Removed " + ", ".join(removed) + " from .cursor/mcp.json")
 PY
 
-echo "Removing Terraform backend config written by init.sh..."
+echo "Removing Terraform backend config written by scripts/init/init.sh..."
 remove_path "infra/envs/dev/backend.hcl"
 remove_path "infra/envs/prod/backend.hcl"
 

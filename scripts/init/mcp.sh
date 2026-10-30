@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Write .cursor/mcp.json for the AWS and Strands MCP servers.
 #
-#   AWS_PROFILE=dev AWS_REGION=us-east-1 bash mcp.sh
+#   AWS_PROFILE=dev AWS_REGION=us-east-1 bash scripts/init/mcp.sh
 #
 # AWS_PROFILE is optional. AWS_REGION falls back to AWS_DEFAULT_REGION, then the
 # AWS CLI config, then us-east-1. Existing MCP servers in .cursor/mcp.json are kept.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 export PATH="${HOME}/.local/bin:${PATH}"

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Install the agent skills this project uses into .agents/skills/ for Cursor.
 #
-#   bash skills.sh
+#   bash scripts/init/skills.sh
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 die() {
