@@ -31,3 +31,7 @@ terraform.rc
 backend.hcl
 *.auto.tfvars
 *.tfvars.json
+
+# Python
+__pycache__/
+*.pyc

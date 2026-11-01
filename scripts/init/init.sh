@@ -10,10 +10,9 @@
 # The script installs agent skills (scripts/init/skills.sh), the Strands runtime,
 # Cursor MCP servers including strands-agents-mcp-server (scripts/init/mcp.sh),
 # and Terraform. It verifies AWS credentials, then writes infra/envs/*/backend.hcl.
-# It does not apply infrastructure. Create the state bucket with:
+# It does not apply infrastructure. Deploy this application's stacks with:
 #
-#   terraform -chdir=infra/bootstrap init
-#   terraform -chdir=infra/bootstrap apply
+#   bash init-market-watch.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -113,13 +112,8 @@ python3 "$ROOT/scripts/init/write_backend_hcl.py" "$ROOT" "$account"
 cat <<EOF
 Account ${account}, CLI region ${AWS_REGION_RESOLVED}.
 
-Create the state bucket once for this account:
+Deploy this application's infrastructure:
 
-  terraform -chdir=infra/bootstrap init
-  terraform -chdir=infra/bootstrap apply
-
-Then initialize an environment (backend.hcl is already written):
-
-  terraform -chdir=infra/envs/dev init -backend-config=backend.hcl
-  terraform -chdir=infra/envs/prod init -backend-config=backend.hcl
+  bash init-market-watch.sh
+  bash init-market-watch.sh prod
 EOF

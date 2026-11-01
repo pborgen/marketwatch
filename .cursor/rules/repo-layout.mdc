@@ -11,13 +11,14 @@ This is a Python monorepo.
 - `packages/` holds shared Python libraries those apps import.
 - `infra/` holds Terraform. Environment roots are `infra/envs/dev` and `infra/envs/prod`. Shared modules go in `infra/modules`. `infra/bootstrap` creates the remote state bucket.
 - `init.sh` at the repo root calls `scripts/init/init.sh`. That directory also holds `skills.sh`, `mcp.sh`, and the programs they call.
+- `init-market-watch.sh` applies this application's Terraform: `infra/bootstrap`, then `infra/envs/dev` or `infra/envs/prod`.
 - The project virtualenv is `.venv`. The Strands runtime is installed from `vendor/`.
 
 Do not run `terraform apply` or `terraform destroy`. `terraform fmt`, `terraform validate`, `terraform plan`, and `terraform init` are fine.
 
 ```
-apps/ingest/          # a deployable Python app
-packages/quotes/      # a shared library imported by apps
+apps/web/             # hello-world frontend
+apps/api/             # API deployed to ECS
 infra/envs/dev/       # Terraform for the dev environment
 infra/modules/        # shared Terraform modules
 ```
