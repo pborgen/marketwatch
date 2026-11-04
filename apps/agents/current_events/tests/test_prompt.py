@@ -81,6 +81,18 @@ def test_load_pins_the_numbered_version(monkeypatch: pytest.MonkeyPatch) -> None
     assert seen == {"promptIdentifier": "PROMPT12345", "promptVersion": "2"}
 
 
+def test_load_reports_a_get_prompt_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BEDROCK_PROMPT_ID", "PROMPT12345")
+    monkeypatch.setenv("BEDROCK_PROMPT_VERSION", "4")
+
+    class Client:
+        def get_prompt(self, **kwargs: str) -> dict:
+            raise RuntimeError("access denied")
+
+    with pytest.raises(RuntimeError, match="PROMPT12345 version 4"):
+        load_system_prompt(Client())
+
+
 def test_load_omits_the_version_for_the_draft(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("BEDROCK_PROMPT_ID", "PROMPT12345")
     monkeypatch.delenv("BEDROCK_PROMPT_VERSION", raising=False)

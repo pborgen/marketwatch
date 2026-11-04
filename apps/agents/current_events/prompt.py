@@ -42,7 +42,10 @@ def system_text(prompt: dict[str, Any]) -> str:
     if not isinstance(variants, list):
         variants = []
     name = prompt.get("defaultVariant")
-    variant = next((item for item in variants if isinstance(item, dict) and item.get("name") == name), None)
+    variant = next(
+        (item for item in variants if isinstance(item, dict) and item.get("name") == name),
+        None,
+    )
     if variant is None:
         variant = next((item for item in variants if isinstance(item, dict)), None)
     if variant is None:
