@@ -111,14 +111,14 @@ module "agent" {
 module "events_agent" {
   source = "../../modules/agent_runtime"
 
-  name             = "${local.name}-events"
-  runtime_name     = "${replace(local.name, "-", "_")}_events"
-  aws_region       = var.aws_region
-  image_tag        = local.events_image_tag
-  repo_root        = local.repo_root
-  model_id         = "us.amazon.nova-micro-v1:0"
-  dockerfile       = "apps/agents/current_events/Dockerfile"
-  description      = "Collects current events into S3 for the OpenSearch RAG index."
+  name                   = "${local.name}-events"
+  runtime_name           = "${replace(local.name, "-", "_")}_events"
+  aws_region             = var.aws_region
+  image_tag              = local.events_image_tag
+  repo_root              = local.repo_root
+  model_id               = "us.amazon.nova-micro-v1:0"
+  dockerfile             = "apps/agents/current_events/Dockerfile"
+  description            = "Collects current events into S3 for the OpenSearch RAG index."
   data_bucket_arn        = module.data_bucket.bucket_arn
   data_bucket_name       = module.data_bucket.bucket_name
   bedrock_prompt_id      = aws_bedrockagent_prompt.events_system.id
