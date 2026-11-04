@@ -1,0 +1,74 @@
+# Apply infra/envs/dev when main changes. Image builds run inside apply.
+# The deploy role is created by infra/bootstrap. Apply that stack locally once,
+# then set the repository variable AWS_DEPLOY_ROLE_ARN to github_dev_deploy_role_arn.
+
+name: Deploy dev
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require the deploy role
+        run: |
+          if [ -z "${{ vars.AWS_DEPLOY_ROLE_ARN }}" ]; then
+            echo "Set the repository variable AWS_DEPLOY_ROLE_ARN to the github_dev_deploy_role_arn output from infra/bootstrap."
+            exit 1
+          fi
+
+      - name: Read the state bucket region
+        run: |
+          region="$(python3 -c '
+          import re
+          from pathlib import Path
+          text = Path("infra/bootstrap/terraform.tfvars").read_text()
+          match = re.search(r"^aws_region\s*=\s*\"([^\"]+)\"", text, re.M)
+          if not match:
+              raise SystemExit("aws_region missing from infra/bootstrap/terraform.tfvars")
+          print(match.group(1))
+          ')"
+          echo "AWS_REGION=${region}" >> "$GITHUB_ENV"
+          echo "AWS_DEFAULT_REGION=${region}" >> "$GITHUB_ENV"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: 7200
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.5"
+          terraform_wrapper: false
+
+      # Agent and API images are linux/arm64. The hosted runner is x86.
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Write backend config
+        run: |
+          account="$(aws sts get-caller-identity --query Account --output text)"
+          python3 scripts/init/write_backend_hcl.py "$GITHUB_WORKSPACE" "$account"
+
+      - name: Apply dev
+        env:
+          TF_IN_AUTOMATION: "1"
+        run: |
+          terraform -chdir=infra/envs/dev init -input=false -backend-config=backend.hcl
+          terraform -chdir=infra/envs/dev apply -input=false -auto-approve

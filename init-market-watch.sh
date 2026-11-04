@@ -5,7 +5,9 @@
 #   AWS_PROFILE=dev bash init-market-watch.sh prod --yes
 #
 # Run bash init.sh first. This applies infra/bootstrap (the Terraform state
-# bucket), then infra/envs/<env>. The default environment is dev.
+# bucket and the GitHub deploy role), then infra/envs/<env>. The default
+# environment is dev. Pushes to main apply dev from GitHub Actions; that
+# workflow does not apply bootstrap.
 #
 # Dev creates the hello-world site, the ECS API, the AgentCore demo agent,
 # PostgreSQL, an OpenSearch vector domain, and the application S3 bucket.
