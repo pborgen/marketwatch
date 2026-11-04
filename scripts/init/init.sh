@@ -47,7 +47,7 @@ fi
 
 python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -e "$STRANDS_DIR" -e "$ROOT/packages/datafeed" boto3
+.venv/bin/python -m pip install -e "$STRANDS_DIR" -e "$ROOT/packages/datafeed" -e "$ROOT/packages/envfile" boto3
 
 if ! command -v aws >/dev/null 2>&1; then
   if command -v brew >/dev/null 2>&1; then

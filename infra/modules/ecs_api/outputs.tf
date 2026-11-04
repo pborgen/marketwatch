@@ -1,3 +1,8 @@
+output "dns_name" {
+  description = "Load balancer hostname. CloudFront uses this as its origin."
+  value       = aws_lb.api.dns_name
+}
+
 output "url" {
   description = "HTTP URL of the API load balancer."
   value       = "http://${aws_lb.api.dns_name}"

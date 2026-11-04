@@ -1,10 +1,10 @@
 output "web_url" {
-  description = "Hello-world frontend."
+  description = "Agent monitor. Sign in with the monitor_password variable."
   value       = module.web.url
 }
 
 output "api_url" {
-  description = "Hello-world API on ECS."
+  description = "API load balancer. The monitor is also served here."
   value       = module.api.url
 }
 
@@ -26,4 +26,14 @@ output "postgres_secret_arn" {
 output "opensearch_endpoint" {
   description = "OpenSearch vector database endpoint."
   value       = module.opensearch.endpoint
+}
+
+output "agent_runtime_arn" {
+  description = "AgentCore runtime for the market-watch demo."
+  value       = module.agent.agent_runtime_arn
+}
+
+output "events_agent_runtime_arn" {
+  description = "AgentCore runtime that stores current events in the data bucket."
+  value       = module.events_agent.agent_runtime_arn
 }

@@ -1,0 +1,45 @@
+{
+  "settings": {
+    "index": {
+      "knn": true,
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    }
+  },
+  "mappings": {
+    "_meta": {
+      "s3_prefix": "current-events/",
+      "document_id": "id",
+      "text_field": "text",
+      "embedding_field": "text_embedding",
+      "embedding_model": "amazon.titan-embed-text-v2:0",
+      "embedding_dimension": 1024,
+      "ingest_pipeline": "current-events-embed",
+      "format": "One JSON object per line. OpenSearch Ingestion reads the date prefix with the newline codec and sets document_id from id."
+    },
+    "properties": {
+      "id": { "type": "keyword" },
+      "schema_version": { "type": "integer" },
+      "text": { "type": "text" },
+      "text_embedding": {
+        "type": "knn_vector",
+        "dimension": 1024,
+        "method": {
+          "name": "hnsw",
+          "space_type": "cosinesimil",
+          "engine": "lucene"
+        }
+      },
+      "title": { "type": "text" },
+      "summary": { "type": "text" },
+      "source": { "type": "keyword" },
+      "feed": { "type": "keyword" },
+      "url": { "type": "keyword", "ignore_above": 2048 },
+      "published_at": { "type": "date", "format": "strict_date_optional_time||epoch_millis" },
+      "collected_at": { "type": "date", "format": "strict_date_optional_time||epoch_millis" },
+      "collected_on": { "type": "date", "format": "strict_date" },
+      "category": { "type": "keyword" },
+      "symbols": { "type": "keyword" }
+    }
+  }
+}

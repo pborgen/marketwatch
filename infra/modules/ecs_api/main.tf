@@ -104,6 +104,17 @@ data "aws_iam_policy_document" "task" {
     resources = ["${var.opensearch_domain_arn}/*"]
   }
 
+  statement {
+    sid = "AgentRuntimes"
+    actions = [
+      "bedrock-agentcore:InvokeAgentRuntime",
+      "bedrock-agentcore:StopRuntimeSession",
+      "bedrock-agentcore:GetAgentRuntime",
+      "bedrock-agentcore:ListAgentRuntimes",
+    ]
+    resources = ["*"]
+  }
+
   # Strands and deepagents call Bedrock from this task. Model IDs vary by
   # inference profile, so the resource is not pinned to one foundation model.
   statement {

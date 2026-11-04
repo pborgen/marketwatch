@@ -1,9 +1,9 @@
 variable "name" {
   type        = string
-  description = "Globally unique name for the site bucket."
+  description = "Comment recorded on the CloudFront distribution."
 }
 
-variable "index_html_path" {
+variable "origin_domain_name" {
   type        = string
-  description = "Path to apps/web/index.html."
+  description = "API load balancer hostname. CloudFront connects to it over HTTP."
 }

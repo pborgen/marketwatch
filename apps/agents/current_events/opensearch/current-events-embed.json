@@ -1,0 +1,13 @@
+{
+  "description": "Embed current-events text into text_embedding. Replace model_id with the OpenSearch ML model id registered for amazon.titan-embed-text-v2:0 (1024 dimensions), then set this pipeline as the current-events index default pipeline.",
+  "processors": [
+    {
+      "text_embedding": {
+        "model_id": "REPLACE_WITH_OPENSEARCH_ML_MODEL_ID",
+        "field_map": {
+          "text": "text_embedding"
+        }
+      }
+    }
+  ]
+}

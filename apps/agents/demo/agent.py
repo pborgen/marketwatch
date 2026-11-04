@@ -11,15 +11,18 @@ You do not write that loop. You write the tools and read what the model did.
 
 Run it from the repo root:
 
-    .venv/bin/python -m pip install -e packages/datafeed 'strands-agents>=1.0'
+    .venv/bin/python -m pip install -e packages/datafeed -e packages/envfile -r apps/agents/demo/requirements.txt
     .venv/bin/python apps/agents/demo/agent.py
     .venv/bin/python apps/agents/demo/agent.py "Quote AAPL and save it to my watchlist"
 
+``serve.py`` is the same agent behind the AgentCore HTTP contract, on port
+8080. ``bash init-market-watch.sh`` builds the image and creates the runtime.
+
 The model is Amazon Bedrock. The process uses your normal AWS credentials
 (``aws configure``, a profile, or environment variables). The account needs
-``bedrock:InvokeModel`` on the model below. Set the model in
-``apps/agents/demo/.env`` as ``STRANDS_MODEL_ID``. A variable already set in
-the environment wins. Set the region with ``AWS_REGION``.
+``bedrock:InvokeModel`` and ``bedrock:Converse`` on the model below. Set the
+model in ``apps/agents/demo/.env`` as ``STRANDS_MODEL_ID``. A variable already
+set in the environment wins. Set the region with ``AWS_REGION``.
 
 Docs: https://strandsagents.com/docs/user-guide/sdk/quickstart/python/
 """
@@ -35,28 +38,11 @@ from typing import Any
 from datafeed.http import normalize_symbol, rejected
 from datafeed.yahoo.news import YahooFinanceRss
 from datafeed.yahoo.quote import YahooQuote
+from envfile import load_dotenv
 from strands import Agent, ToolContext, tool
 from strands.models import BedrockModel
 
-
-def _load_dotenv(path: Path) -> None:
-    """Read KEY=value lines. Variables already set in the environment stay."""
-    if not path.is_file():
-        return
-    for raw in path.read_text().splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        if line.startswith("export "):
-            line = line[len("export ") :].strip()
-        key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
-            os.environ[key] = value
-
-
-_load_dotenv(Path(__file__).with_name(".env"))
+load_dotenv(Path(__file__).with_name(".env"))
 
 # Nova Micro is the cheapest Bedrock model that can call tools. It has no
 # global inference profile, so the fallback is the US geo profile.
@@ -205,7 +191,7 @@ def build_agent() -> Agent:
     )
 
 
-def _answer(result: Any) -> str:
+def answer_text(result: Any) -> str:
     parts: list[str] = []
     for block in result.message["content"]:
         text = block.get("text")
@@ -251,7 +237,7 @@ def print_turn(agent: Agent, start: int, result: Any) -> None:
             if returned is not None:
                 print(f"  tool returned {_preview(returned)}")
     print()
-    print(_answer(result) or "(The model returned no text.)")
+    print(answer_text(result) or "(The model returned no text.)")
     print()
 
 

@@ -14,6 +14,13 @@ variable "environment" {
   }
 }
 
+variable "monitor_password" {
+  type        = string
+  description = "Shared password for the agent monitor. This is a demo lock, not an account system."
+  default     = "demo"
+  sensitive   = true
+}
+
 variable "aws_region" {
   type        = string
   description = "Region for resources in this environment. Match the state bucket region in infra/bootstrap."

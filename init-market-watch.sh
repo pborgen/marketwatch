@@ -7,9 +7,9 @@
 # Run bash init.sh first. This applies infra/bootstrap (the Terraform state
 # bucket), then infra/envs/<env>. The default environment is dev.
 #
-# Dev creates the hello-world site, the ECS API, PostgreSQL, an OpenSearch
-# vector domain, and the application S3 bucket. Docker
-# must be running so apply can publish apps/api.
+# Dev creates the hello-world site, the ECS API, the AgentCore demo agent,
+# PostgreSQL, an OpenSearch vector domain, and the application S3 bucket.
+# Docker must be running so apply can publish the API and agent images.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

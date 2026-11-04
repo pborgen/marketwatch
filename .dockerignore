@@ -1,0 +1,14 @@
+.git
+.venv
+vendor
+node_modules
+.agents
+.cursor
+infra
+**/.env
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.terraform
+**/*.tfstate
+**/*.tfstate.*
