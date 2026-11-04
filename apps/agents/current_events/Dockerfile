@@ -11,6 +11,8 @@ RUN pip install --no-cache-dir /opt/datafeed /opt/envfile -r /app/requirements.t
 COPY apps/agents/current_events/agent.py \
      apps/agents/current_events/collect.py \
      apps/agents/current_events/documents.py \
+     apps/agents/current_events/prompt.py \
+     apps/agents/current_events/system_prompt.txt \
      apps/agents/current_events/serve.py \
      apps/agents/current_events/store.py \
      /app/

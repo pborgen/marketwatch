@@ -181,6 +181,17 @@ data "aws_iam_policy_document" "execution" {
     }
   }
 
+  # Prompt management is a separate API from Converse. The agent reads one
+  # numbered version at startup and uses the text as its system prompt.
+  dynamic "statement" {
+    for_each = length(var.bedrock_prompt_arns) == 0 ? [] : [var.bedrock_prompt_arns]
+    content {
+      sid       = "BedrockPrompt"
+      actions   = ["bedrock:GetPrompt"]
+      resources = statement.value
+    }
+  }
+
   dynamic "statement" {
     for_each = var.data_bucket_arn == "" ? [] : [var.data_bucket_arn]
     content {
@@ -219,6 +230,8 @@ resource "aws_bedrockagentcore_agent_runtime" "this" {
       STRANDS_MODEL_ID   = var.model_id
     },
     { for key, value in { DATA_BUCKET = var.data_bucket_name } : key => value if value != "" },
+    { for key, value in { BEDROCK_PROMPT_ID = var.bedrock_prompt_id } : key => value if value != "" },
+    { for key, value in { BEDROCK_PROMPT_VERSION = var.bedrock_prompt_version } : key => value if value != "" },
   )
 
   network_configuration {

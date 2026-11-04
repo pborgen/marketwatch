@@ -56,3 +56,21 @@ variable "data_bucket_name" {
   description = "DATA_BUCKET value in the runtime. Empty leaves the variable unset."
   default     = ""
 }
+
+variable "bedrock_prompt_id" {
+  type        = string
+  description = "Bedrock Prompt Management id. Empty leaves BEDROCK_PROMPT_ID unset."
+  default     = ""
+}
+
+variable "bedrock_prompt_version" {
+  type        = string
+  description = "Numbered prompt version. Empty leaves BEDROCK_PROMPT_VERSION unset."
+  default     = ""
+}
+
+variable "bedrock_prompt_arns" {
+  type        = list(string)
+  description = "Prompt and prompt-version ARNs the runtime may GetPrompt. Empty skips the policy."
+  default     = []
+}

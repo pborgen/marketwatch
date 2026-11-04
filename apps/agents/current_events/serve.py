@@ -50,7 +50,10 @@ def invoke(payload: dict[str, Any], context: Any) -> dict[str, Any]:
     session_id = _session_id(context)
     agent = _sessions.get(session_id)
     if agent is None:
-        agent = build_agent()
+        try:
+            agent = build_agent()
+        except Exception as exc:
+            return {"error": f"The agent failed to start: {exc}"}
         _sessions[session_id] = agent
     try:
         result = agent(prompt.strip())
