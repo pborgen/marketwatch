@@ -20,13 +20,15 @@ locals {
     if !endswith(path, ".pyc") && !strcontains(path, "__pycache__") && !strcontains(path, ".env")
   ]
   agent_image_tag = substr(sha256(join("", [for path in sort(local.agent_source_files) : filesha256(path)])), 0, 12)
+  # system_prompt.txt is published as a Bedrock prompt version. The image
+  # loads that version, so a prompt edit does not rebuild the container.
   events_source_files = [
     for path in concat(
       [for path in fileset("${local.repo_root}/apps/agents/current_events", "**") : "${local.repo_root}/apps/agents/current_events/${path}"],
       [for path in fileset("${local.repo_root}/packages/datafeed", "**") : "${local.repo_root}/packages/datafeed/${path}"],
       [for path in fileset("${local.repo_root}/packages/envfile", "**") : "${local.repo_root}/packages/envfile/${path}"],
     ) : path
-    if !endswith(path, ".pyc") && !strcontains(path, "__pycache__") && !strcontains(path, ".env")
+    if !endswith(path, ".pyc") && !strcontains(path, "__pycache__") && !strcontains(path, ".env") && !endswith(path, "/system_prompt.txt")
   ]
   events_image_tag = substr(sha256(join("", [for path in sort(local.events_source_files) : filesha256(path)])), 0, 12)
 }
@@ -117,6 +119,12 @@ module "events_agent" {
   model_id         = "us.amazon.nova-micro-v1:0"
   dockerfile       = "apps/agents/current_events/Dockerfile"
   description      = "Collects current events into S3 for the OpenSearch RAG index."
-  data_bucket_arn  = module.data_bucket.bucket_arn
-  data_bucket_name = module.data_bucket.bucket_name
+  data_bucket_arn        = module.data_bucket.bucket_arn
+  data_bucket_name       = module.data_bucket.bucket_name
+  bedrock_prompt_id      = aws_bedrockagent_prompt.events_system.id
+  bedrock_prompt_version = local.events_system_prompt_version["Version"]
+  bedrock_prompt_arns = [
+    aws_bedrockagent_prompt.events_system.arn,
+    local.events_system_prompt_version["Arn"],
+  ]
 }

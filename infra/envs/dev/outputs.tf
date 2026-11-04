@@ -37,3 +37,8 @@ output "events_agent_runtime_arn" {
   description = "AgentCore runtime that stores current events in the data bucket."
   value       = module.events_agent.agent_runtime_arn
 }
+
+output "events_system_prompt_arn" {
+  description = "Numbered Bedrock prompt version the current-events runtime loads."
+  value       = local.events_system_prompt_version["Arn"]
+}
