@@ -3,14 +3,16 @@ data "aws_caller_identity" "current" {}
 locals {
   name      = "${var.project}-${var.environment}"
   repo_root = abspath("${path.module}/../../..")
-  api_image_tag = substr(sha256(join("", [
+  web_source_files = [
+    for path in fileset("${local.repo_root}/apps/web", "**") : "${local.repo_root}/apps/web/${path}"
+    if !startswith(path, "node_modules/") && !startswith(path, "dist/")
+  ]
+  api_image_tag = substr(sha256(join("", concat([
     filesha256("${path.module}/../../../apps/api/main.py"),
     filesha256("${path.module}/../../../apps/api/auth.py"),
     filesha256("${path.module}/../../../apps/api/agents.py"),
     filesha256("${path.module}/../../../apps/api/Dockerfile"),
-    filesha256("${path.module}/../../../apps/web/login.html"),
-    filesha256("${path.module}/../../../apps/web/monitor.html"),
-  ])), 0, 12)
+  ], [for path in sort(local.web_source_files) : filesha256(path)]))), 0, 12)
   agent_source_files = [
     for path in concat(
       [for path in fileset("${local.repo_root}/apps/agents/demo", "**") : "${local.repo_root}/apps/agents/demo/${path}"],

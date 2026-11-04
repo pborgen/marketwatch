@@ -89,7 +89,7 @@ def test_password_gates_the_page_and_commands(monkeypatch) -> None:
 
         status, body, _cookie = _exchange(port, "GET", "/")
         assert status == 200
-        assert b"shared demo password" in body
+        assert b'id="root"' in body
         assert b"<textarea" not in body
 
         status, body, _cookie = _exchange(port, "GET", "/api/agents")
@@ -107,7 +107,10 @@ def test_password_gates_the_page_and_commands(monkeypatch) -> None:
 
         status, body, _cookie = _exchange(port, "GET", "/", cookie=session)
         assert status == 200
-        assert b'id="agents"' in body
+        assert b'id="root"' in body
+        status, body, _cookie = _exchange(port, "GET", "/api/agents", cookie=session)
+        assert status == 200
+        assert json.loads(body)["agents"][0]["id"] == "market-watch"
 
         status, body, _cookie = _exchange(
             port,

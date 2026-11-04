@@ -12,6 +12,7 @@ Run it from the repo root, after the installs in ``agent.py``:
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from bedrock_agentcore import BedrockAgentCoreApp
@@ -63,4 +64,4 @@ def invoke(payload: dict[str, Any], context: Any) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=int(os.environ.get("PORT", "8080")))

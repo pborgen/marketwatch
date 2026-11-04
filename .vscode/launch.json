@@ -1,0 +1,65 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Monitor API",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/api/main.py",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "justMyCode": true
+    },
+    {
+      "name": "React monitor",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/apps/web",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Demo agent",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/agents/demo/serve.py",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PORT": "8080"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "Current events agent",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/agents/current_events/serve.py",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PORT": "8081"
+      },
+      "justMyCode": true
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Monitor",
+      "configurations": ["Monitor API", "React monitor"],
+      "stopAll": true
+    },
+    {
+      "name": "Monitor and agents",
+      "configurations": ["Monitor API", "React monitor", "Demo agent", "Current events agent"],
+      "stopAll": true
+    }
+  ]
+}

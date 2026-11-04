@@ -4,8 +4,10 @@ The page is locked with one shared password. When ``MONITOR_PASSWORD`` is
 unset, the password is ``demo``. After signing in you can see whether each
 agent is up and send it a command.
 
-Run it from the repo root:
+The pages are the React app in ``apps/web``. Build it once, then run the API:
 
+    npm --prefix apps/web install
+    npm --prefix apps/web run build
     .venv/bin/python apps/api/main.py
 
 Then open http://127.0.0.1:8000/
@@ -23,7 +25,21 @@ from agents import Catalog
 from auth import clear_cookie, password_matches, session_ok, set_cookie
 
 CATALOG = Catalog()
-_WEB = Path(os.environ["WEB_DIR"]) if os.environ.get("WEB_DIR") else Path(__file__).resolve().parents[1] / "web"
+_SOURCE = Path(__file__).resolve().parents[1] / "web"
+_BUILT = _SOURCE / "dist"
+_WEB = Path(os.environ["WEB_DIR"]) if os.environ.get("WEB_DIR") else (_BUILT if (_BUILT / "index.html").is_file() else _SOURCE)
+_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".json": "application/json",
+    ".map": "application/json",
+    ".png": "image/png",
+    ".ico": "image/x-icon",
+    ".woff2": "font/woff2",
+}
+_LOGIN_ERROR = "That password is not the demo password."
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -41,14 +57,13 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._json(200, {"agents": self.catalog.list_status()})
             return
-        if path not in {"/", "/login"}:
-            self._json(404, {"error": "Not found."})
-            return
         if path == "/login" and session_ok(self.headers):
             self._redirect("/")
             return
-        page = "monitor.html" if session_ok(self.headers) else "login.html"
-        self._html(200, _page(page, ""))
+        if path.startswith("/api/"):
+            self._json(404, {"error": "Not found."})
+            return
+        self._serve(path)
 
     def do_POST(self) -> None:
         path = self.path.split("?", 1)[0]
@@ -69,11 +84,53 @@ class Handler(BaseHTTPRequestHandler):
         super().log_message(fmt, *args)
 
     def _login(self) -> None:
-        form = _form(self._body())
-        if not password_matches(form.get("password", "")):
-            self._html(401, _page("login.html", "That password is not the demo password."))
+        password, as_json = self._password()
+        if not password_matches(password):
+            self._json(401, {"error": _LOGIN_ERROR})
             return
-        self._redirect("/", set_cookie(_secure(self.headers)))
+        cookie = set_cookie(_secure(self.headers))
+        if as_json:
+            self.send_response(204)
+            self.send_header("Set-Cookie", cookie)
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        self._redirect("/", cookie)
+
+    def _password(self) -> tuple[str, bool]:
+        raw = self._body()
+        if "application/json" in self.headers.get("Content-Type", ""):
+            try:
+                payload = json.loads(raw.decode("utf-8") or "{}")
+            except json.JSONDecodeError:
+                return "", True
+            password = payload.get("password") if isinstance(payload, dict) else ""
+            return password if isinstance(password, str) else "", True
+        return _form(raw).get("password", ""), False
+
+    def _serve(self, url_path: str) -> None:
+        root = _WEB.resolve()
+        index = root / "index.html"
+        relative = url_path.lstrip("/")
+        if not relative:
+            self._file(index)
+            return
+        candidate = (root / relative).resolve()
+        if (candidate == root or root in candidate.parents) and candidate.is_file():
+            self._file(candidate)
+            return
+        if "." not in Path(relative).name:
+            self._file(index)
+            return
+        self._json(404, {"error": "Not found."})
+
+    def _file(self, path: Path) -> None:
+        if not path.is_file():
+            self._json(500, {"error": "The monitor build is missing."})
+            return
+        media = _TYPES.get(path.suffix, "application/octet-stream")
+        self._bytes(200, path.read_bytes(), media)
 
     def _command(self, path: str) -> None:
         if not session_ok(self.headers):
@@ -114,10 +171,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", "0")
         self.end_headers()
 
-    def _html(self, status: int, page: str) -> None:
-        body = page.encode()
+    def _bytes(self, status: int, body: bytes, media: str) -> None:
         self.send_response(status)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Type", media)
         self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -131,10 +187,6 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
-
-
-def _page(name: str, error: str) -> str:
-    return (_WEB / name).read_text(encoding="utf-8").replace("{{error}}", error)
 
 
 def _form(body: bytes) -> dict[str, str]:

@@ -1,6 +1,7 @@
 .venv/
 vendor/
 node_modules/
+apps/web/dist/
 
 # Installed by scripts/init/skills.sh. skills-lock.json stays tracked so the set
 # can be restored.

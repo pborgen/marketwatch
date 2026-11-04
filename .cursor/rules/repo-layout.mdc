@@ -17,7 +17,7 @@ This is a Python monorepo.
 Do not run `terraform apply` or `terraform destroy`. `terraform fmt`, `terraform validate`, `terraform plan`, and `terraform init` are fine.
 
 ```
-apps/web/             # hello-world frontend
+apps/web/             # React monitor
 apps/api/             # API deployed to ECS
 apps/agents/demo/     # Strands demo, deployed to AgentCore
 packages/datafeed/    # market data clients
