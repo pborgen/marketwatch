@@ -69,7 +69,12 @@ jobs:
       - name: Apply dev
         env:
           TF_IN_AUTOMATION: "1"
+          TF_VAR_monitor_password: ${{ secrets.MONITOR_PASSWORD }}
         run: |
+          if [[ -z "${TF_VAR_monitor_password}" ]]; then
+            echo "Set the MONITOR_PASSWORD repository secret. The password is not stored in git."
+            exit 1
+          fi
           terraform -chdir=infra/envs/dev init -input=false -backend-config=backend.hcl
           terraform -chdir=infra/envs/dev validate
           terraform -chdir=infra/envs/dev apply -input=false -auto-approve

@@ -46,12 +46,47 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Print the value of one KEY from a dotenv file.
+env_file_value() {
+  local file="$1"
+  local want="$2"
+  [[ -f "$file" ]] || return 1
+  local line key value
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    [[ "$line" == export\ * ]] && line="${line#export }"
+    key="${line%%=*}"
+    key="${key%"${key##*[![:space:]]}"}"
+    [[ "$key" == "$want" ]] || continue
+    value="${line#*=}"
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    if [[ ${#value} -ge 2 && ( "$value" == \"*\" || "$value" == \'*\' ) ]]; then
+      value="${value:1:${#value}-2}"
+    fi
+    printf '%s' "$value"
+    return 0
+  done < "$file"
+  return 1
+}
+
 command -v terraform >/dev/null 2>&1 || die "Terraform is missing. Run bash init.sh first."
 command -v aws >/dev/null 2>&1 || die "The AWS CLI is missing. Run bash init.sh first."
 
 if [[ "$env_name" == "dev" ]]; then
   command -v docker >/dev/null 2>&1 || die "Docker is required to publish the API image for dev."
   docker info >/dev/null 2>&1 || die "Docker is installed but the daemon is not running."
+  if [[ -z "${TF_VAR_monitor_password:-}" ]]; then
+    if [[ -n "${MONITOR_PASSWORD:-}" ]]; then
+      export TF_VAR_monitor_password="$MONITOR_PASSWORD"
+    else
+      TF_VAR_monitor_password="$(env_file_value "$ROOT/.env" MONITOR_PASSWORD)" \
+        || die "Set MONITOR_PASSWORD in .env. That file is gitignored."
+      export TF_VAR_monitor_password
+    fi
+  fi
+  [[ -n "$TF_VAR_monitor_password" ]] || die "MONITOR_PASSWORD in .env is blank."
 fi
 
 backend_hcl="infra/envs/${env_name}/backend.hcl"

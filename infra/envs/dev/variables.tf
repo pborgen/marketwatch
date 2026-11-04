@@ -16,8 +16,7 @@ variable "environment" {
 
 variable "monitor_password" {
   type        = string
-  description = "Shared password for the agent monitor. This is a demo lock, not an account system."
-  default     = "demo"
+  description = "Shared password for the agent monitor. Pass TF_VAR_monitor_password. init-market-watch.sh reads MONITOR_PASSWORD from the gitignored .env. GitHub Actions reads the MONITOR_PASSWORD secret."
   sensitive   = true
 }
 
