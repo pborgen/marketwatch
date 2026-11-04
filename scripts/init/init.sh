@@ -9,7 +9,8 @@
 #
 # The script installs agent skills (scripts/init/skills.sh), the Strands runtime,
 # Cursor MCP servers including strands-agents-mcp-server (scripts/init/mcp.sh),
-# and Terraform. It verifies AWS credentials, then writes infra/envs/*/backend.hcl.
+# Terraform, and the pre-commit hook that validates Terraform. It verifies AWS
+# credentials, then writes infra/envs/*/backend.hcl.
 # It does not apply infrastructure. Deploy this application's stacks with:
 #
 #   bash init-market-watch.sh
@@ -75,6 +76,11 @@ parts = [int(p) for p in version.split(".")[:2]]
 if parts < [1, 10]:
     raise SystemExit(f"Terraform 1.10 or newer is required (found {version}).")
 '
+
+echo "Installing the Terraform pre-commit hook..."
+hooks_dir="$(git rev-parse --git-path hooks)"
+mkdir -p "$hooks_dir"
+ln -sfn "$ROOT/scripts/hooks/pre-commit" "$hooks_dir/pre-commit"
 
 AWS_REGION_RESOLVED="${AWS_REGION:-${AWS_DEFAULT_REGION:-}}"
 if [[ -z "$AWS_REGION_RESOLVED" ]]; then

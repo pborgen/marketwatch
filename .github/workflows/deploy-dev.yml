@@ -71,4 +71,5 @@ jobs:
           TF_IN_AUTOMATION: "1"
         run: |
           terraform -chdir=infra/envs/dev init -input=false -backend-config=backend.hcl
+          terraform -chdir=infra/envs/dev validate
           terraform -chdir=infra/envs/dev apply -input=false -auto-approve

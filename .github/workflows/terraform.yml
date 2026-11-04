@@ -1,0 +1,35 @@
+# Validate Terraform on pull requests and on main. This does not apply.
+# init uses -backend=false, so the job does not need AWS credentials.
+
+name: Terraform
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - "scripts/terraform/validate.sh"
+      - ".github/workflows/terraform.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - "scripts/terraform/validate.sh"
+      - ".github/workflows/terraform.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.10.5"
+          terraform_wrapper: false
+
+      - name: Validate
+        run: bash scripts/terraform/validate.sh
