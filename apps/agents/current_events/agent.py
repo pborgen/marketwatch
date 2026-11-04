@@ -16,6 +16,11 @@ on the AgentCore HTTP contract. Set ``STRANDS_MODEL_ID`` and ``AWS_REGION``
 the same way as the demo agent. A variable already set in the environment
 wins over ``apps/agents/current_events/.env``.
 
+The system prompt is stored in Amazon Bedrock Prompt Management.
+``system_prompt.txt`` is the text Terraform publishes. The runtime sets
+``BEDROCK_PROMPT_ID`` and ``BEDROCK_PROMPT_VERSION`` to a numbered version,
+and this process loads that version. Leave both unset to use the text file.
+
 To store without a model call, run ``collect.py``.
 """
 
@@ -32,24 +37,11 @@ from strands import Agent, tool
 from strands.models import BedrockModel
 
 from collect import run_collection
+from prompt import PROMPT_ID_ENV, PROMPT_VERSION_ENV, load_system_prompt
 
 load_dotenv(Path(__file__).with_name(".env"))
 
 MODEL_ID = os.environ.get("STRANDS_MODEL_ID", "us.amazon.nova-micro-v1:0")
-
-SYSTEM_PROMPT = """
-You collect current events for a market-watch RAG index. Call
-collect_current_events instead of answering from memory. Pass topics only
-when the person named subjects, as a comma-separated list. Leave topics
-blank for the default market topics.
-
-The tool writes newline-delimited JSON to S3 under
-current-events/date=YYYY-MM-DD/. Each line is one OpenSearch document.
-The text field is the passage to embed, and id is the document id.
-
-Reply with the S3 URI, the UTC date, how many documents were stored, and
-any feed errors. Keep it to a few sentences.
-""".strip()
 
 
 @tool
@@ -78,7 +70,7 @@ def build_agent() -> Agent:
     )
     return Agent(
         model=model,
-        system_prompt=SYSTEM_PROMPT,
+        system_prompt=load_system_prompt(),
         tools=[collect_current_events],
         callback_handler=None,
         name="current-events",
@@ -150,10 +142,19 @@ def _banner(agent: Agent) -> None:
     print("Current-events agent")
     print(f"model: {model_id}  region: {region}")
     print(f"bucket: {bucket}")
+    print(f"prompt: {_prompt_label()}")
     print("Objects land at current-events/date=YYYY-MM-DD/ as newline-delimited JSON.")
     print("Try: Collect today's events.")
     print("Commands: /quit")
     print()
+
+
+def _prompt_label() -> str:
+    prompt_id = os.environ.get(PROMPT_ID_ENV, "").strip()
+    if not prompt_id:
+        return "system_prompt.txt"
+    version = os.environ.get(PROMPT_VERSION_ENV, "").strip() or "DRAFT"
+    return f"{prompt_id} version {version}"
 
 
 def repl(agent: Agent) -> None:
