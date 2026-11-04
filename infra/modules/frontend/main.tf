@@ -1,6 +1,18 @@
 # The monitor is the API. CloudFront is the HTTPS front door. The API
 # refuses every page except /health until the shared demo password is sent.
 
+# This distribution used to reference an S3 origin access control. That
+# control is gone from this module, but CloudFront rejects the delete while
+# the distribution still names it. Drop it from state here. The distribution
+# update clears the reference; the unused control can be deleted after that.
+removed {
+  from = aws_cloudfront_origin_access_control.web
+
+  lifecycle {
+    destroy = false
+  }
+}
+
 resource "aws_cloudfront_distribution" "web" {
   enabled      = true
   comment      = var.name
