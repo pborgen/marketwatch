@@ -35,3 +35,7 @@ backend.hcl
 # Python
 __pycache__/
 *.pyc
+*.egg-info/
+
+# Local settings. Model ids and credentials stay on this machine.
+.env
