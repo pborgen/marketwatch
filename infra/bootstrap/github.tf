@@ -13,6 +13,22 @@ variable "github_repository" {
   }
 }
 
+variable "github_owner_id" {
+  type        = string
+  description = "Numeric GitHub owner id. Actions puts this in the OIDC subject."
+  default     = "1530586"
+}
+
+variable "github_repository_id" {
+  type        = string
+  description = "Numeric GitHub repository id. Actions puts this in the OIDC subject."
+  default     = "1439897968"
+}
+
+locals {
+  github_subject = "${split("/", var.github_repository)[0]}@${var.github_owner_id}/${split("/", var.github_repository)[1]}@${var.github_repository_id}"
+}
+
 resource "aws_iam_openid_connect_provider" "github" {
   url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
@@ -38,10 +54,12 @@ data "aws_iam_policy_document" "github_dev_trust" {
     }
 
     # workflow_dispatch from main presents the same subject as a push.
+    # GitHub includes the owner id and repository id, so the name-only
+    # subject repo:owner/name:ref:refs/heads/main does not match.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repository}:ref:refs/heads/main"]
+      values   = ["repo:${local.github_subject}:ref:refs/heads/main"]
     }
   }
 }
