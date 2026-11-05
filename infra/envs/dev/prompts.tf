@@ -1,6 +1,10 @@
 locals {
-  events_system_prompt         = trimspace(file("${local.repo_root}/apps/agents/current_events/system_prompt.txt"))
-  events_system_prompt_version = jsondecode(aws_cloudcontrolapi_resource.events_system_version.properties)
+  events_system_prompt           = trimspace(file("${local.repo_root}/apps/agents/current_events/system_prompt.txt"))
+  events_system_prompt_version   = jsondecode(aws_cloudcontrolapi_resource.events_system_version.properties)
+  demo_system_prompt             = trimspace(file("${local.repo_root}/apps/agents/demo/system_prompt.txt"))
+  demo_system_prompt_version     = jsondecode(aws_cloudcontrolapi_resource.demo_system_version.properties)
+  research_system_prompt         = trimspace(file("${local.repo_root}/apps/agents/research/system_prompt.txt"))
+  research_system_prompt_version = jsondecode(aws_cloudcontrolapi_resource.research_system_version.properties)
 }
 
 resource "aws_bedrockagent_prompt" "events_system" {
@@ -42,5 +46,77 @@ resource "aws_cloudcontrolapi_resource" "events_system_version" {
   desired_state = jsonencode({
     PromptArn   = aws_bedrockagent_prompt.events_system.arn
     Description = "text ${substr(sha256(local.events_system_prompt), 0, 12)} at ${aws_bedrockagent_prompt.events_system.updated_at}"
+  })
+}
+
+resource "aws_bedrockagent_prompt" "demo_system" {
+  name            = "${local.name}-demo-system"
+  description     = "System prompt for the market-watch demo. The runtime loads a published version, not this draft."
+  default_variant = "system"
+
+  variant {
+    name          = "system"
+    model_id      = "us.amazon.nova-micro-v1:0"
+    template_type = "CHAT"
+
+    template_configuration {
+      chat {
+        system {
+          text = local.demo_system_prompt
+        }
+
+        message {
+          role = "user"
+          content {
+            text = "Quote AAPL."
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "aws_cloudcontrolapi_resource" "demo_system_version" {
+  type_name = "AWS::Bedrock::PromptVersion"
+
+  desired_state = jsonencode({
+    PromptArn   = aws_bedrockagent_prompt.demo_system.arn
+    Description = "text ${substr(sha256(local.demo_system_prompt), 0, 12)} at ${aws_bedrockagent_prompt.demo_system.updated_at}"
+  })
+}
+
+resource "aws_bedrockagent_prompt" "research_system" {
+  name            = "${local.name}-research-system"
+  description     = "System prompt for the stock research agent. The runtime loads a published version, not this draft."
+  default_variant = "system"
+
+  variant {
+    name          = "system"
+    model_id      = "us.amazon.nova-micro-v1:0"
+    template_type = "CHAT"
+
+    template_configuration {
+      chat {
+        system {
+          text = local.research_system_prompt
+        }
+
+        message {
+          role = "user"
+          content {
+            text = "Research AAPL."
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "aws_cloudcontrolapi_resource" "research_system_version" {
+  type_name = "AWS::Bedrock::PromptVersion"
+
+  desired_state = jsonencode({
+    PromptArn   = aws_bedrockagent_prompt.research_system.arn
+    Description = "text ${substr(sha256(local.research_system_prompt), 0, 12)} at ${aws_bedrockagent_prompt.research_system.updated_at}"
   })
 }

@@ -1,34 +1,29 @@
-"""Load the current-events system prompt.
+"""Load a system prompt from Amazon Bedrock Prompt Management.
 
-Terraform publishes ``system_prompt.txt`` with Amazon Bedrock Prompt
-Management and sets ``BEDROCK_PROMPT_ID`` and ``BEDROCK_PROMPT_VERSION`` on
-the runtime. Those variables select a numbered version. Prompt management
-keeps that version immutable, so a draft edit does not change a running
-agent until a new version is published.
+``load_system_prompt`` takes a prompt id and a version and calls GetPrompt.
+A numbered version is immutable. Pass an empty version to read the draft.
 
-Leave both variables unset to read ``system_prompt.txt``. That is the local
-path, before the prompt exists in the account.
+``local_system_prompt`` reads a ``system_prompt.txt`` when the process has
+no prompt id yet.
 """
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any
 
 PROMPT_ID_ENV = "BEDROCK_PROMPT_ID"
 PROMPT_VERSION_ENV = "BEDROCK_PROMPT_VERSION"
-_TEXT_FILE = Path(__file__).with_name("system_prompt.txt")
 
 
-def local_system_prompt() -> str:
-    if not _TEXT_FILE.is_file():
-        raise RuntimeError(
-            f"{PROMPT_ID_ENV} is not set, and {_TEXT_FILE.name} is not next to the agent."
-        )
-    text = _TEXT_FILE.read_text(encoding="utf-8").strip()
+def local_system_prompt(path: Path | str) -> str:
+    """Read one ``system_prompt.txt``. Blank files are rejected."""
+    file = Path(path)
+    if not file.is_file():
+        raise RuntimeError(f"{PROMPT_ID_ENV} is not set, and {file.name} is missing.")
+    text = file.read_text(encoding="utf-8").strip()
     if not text:
-        raise RuntimeError(f"{_TEXT_FILE.name} is empty.")
+        raise RuntimeError(f"{file.name} is empty.")
     return text
 
 
@@ -57,11 +52,16 @@ def system_text(prompt: dict[str, Any]) -> str:
     raise RuntimeError(f"Bedrock prompt variant {label} has no system text.")
 
 
-def load_system_prompt(client: Any | None = None) -> str:
-    prompt_id = os.environ.get(PROMPT_ID_ENV, "").strip()
+def load_system_prompt(prompt_id: str, version: str = "", client: Any | None = None) -> str:
+    """Load the system text for one Bedrock prompt id and version.
+
+    ``version`` is the published number, such as ``"2"``. An empty version
+    reads the draft.
+    """
+    prompt_id = prompt_id.strip()
+    version = version.strip()
     if not prompt_id:
-        return local_system_prompt()
-    version = os.environ.get(PROMPT_VERSION_ENV, "").strip()
+        raise RuntimeError("A Bedrock prompt id is required.")
     where = f"{prompt_id} version {version}" if version else f"{prompt_id} draft"
     kwargs: dict[str, str] = {"promptIdentifier": prompt_id}
     if version:

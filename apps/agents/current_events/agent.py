@@ -7,7 +7,7 @@ date.
 
 Run it from the repo root:
 
-    .venv/bin/python -m pip install -e packages/datafeed -e packages/envfile -r apps/agents/current_events/requirements.txt
+    .venv/bin/python -m pip install -e packages/datafeed -e packages/envfile -e packages/prompt_management -r apps/agents/current_events/requirements.txt
     DATA_BUCKET=your-bucket .venv/bin/python apps/agents/current_events/agent.py
     DATA_BUCKET=your-bucket .venv/bin/python apps/agents/current_events/agent.py "Collect today's events on oil prices"
 
@@ -32,16 +32,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from prompt_management.prompt import PROMPT_ID_ENV, PROMPT_VERSION_ENV, load_system_prompt, local_system_prompt
 from envfile import load_dotenv
 from strands import Agent, tool
 from strands.models import BedrockModel
 
 from collect import run_collection
-from prompt import PROMPT_ID_ENV, PROMPT_VERSION_ENV, load_system_prompt
 
 load_dotenv(Path(__file__).with_name(".env"))
 
 MODEL_ID = os.environ.get("STRANDS_MODEL_ID", "us.amazon.nova-micro-v1:0")
+_SYSTEM_PROMPT = Path(__file__).with_name("system_prompt.txt")
 
 
 @tool
@@ -60,6 +61,13 @@ def collect_current_events(topics: str = "", limit: int = 8, include_releases: b
     return run_collection(topics, limit, include_releases=include_releases)
 
 
+def _prompt_text() -> str:
+    prompt_id = os.environ.get(PROMPT_ID_ENV, "").strip()
+    if not prompt_id:
+        return local_system_prompt(_SYSTEM_PROMPT)
+    return load_system_prompt(prompt_id, os.environ.get(PROMPT_VERSION_ENV, ""))
+
+
 def build_agent() -> Agent:
     region = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
     model = BedrockModel(
@@ -70,7 +78,7 @@ def build_agent() -> Agent:
     )
     return Agent(
         model=model,
-        system_prompt=load_system_prompt(),
+        system_prompt=_prompt_text(),
         tools=[collect_current_events],
         callback_handler=None,
         name="current-events",

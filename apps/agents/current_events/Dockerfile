@@ -4,14 +4,14 @@ WORKDIR /app
 
 COPY packages/datafeed /opt/datafeed
 COPY packages/envfile /opt/envfile
+COPY packages/prompt_management /opt/prompt_management
 COPY apps/agents/current_events/requirements.txt /app/requirements.txt
 
-RUN pip install --no-cache-dir /opt/datafeed /opt/envfile -r /app/requirements.txt
+RUN pip install --no-cache-dir /opt/datafeed /opt/envfile /opt/prompt_management -r /app/requirements.txt
 
 COPY apps/agents/current_events/agent.py \
      apps/agents/current_events/collect.py \
      apps/agents/current_events/documents.py \
-     apps/agents/current_events/prompt.py \
      apps/agents/current_events/system_prompt.txt \
      apps/agents/current_events/serve.py \
      apps/agents/current_events/store.py \

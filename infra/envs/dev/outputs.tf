@@ -42,3 +42,13 @@ output "events_system_prompt_arn" {
   description = "Numbered Bedrock prompt version the current-events runtime loads."
   value       = local.events_system_prompt_version["Arn"]
 }
+
+output "demo_system_prompt_arn" {
+  description = "Numbered Bedrock prompt version the demo runtime loads."
+  value       = local.demo_system_prompt_version["Arn"]
+}
+
+output "research_system_prompt_arn" {
+  description = "Numbered Bedrock prompt version for the stock research agent."
+  value       = local.research_system_prompt_version["Arn"]
+}

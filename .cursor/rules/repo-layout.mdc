@@ -8,7 +8,7 @@ alwaysApply: true
 This is a Python monorepo.
 
 - `apps/` holds deployable Python applications.
-- `packages/` holds shared Python libraries those apps import. `packages/datafeed` is the market-data client library. `packages/envfile` loads `.env` files without overriding variables already set.
+- `packages/` holds shared Python libraries those apps import. `packages/datafeed` is the market-data client library. `packages/envfile` loads `.env` files without overriding variables already set. `packages/prompt_management` loads system prompts from Amazon Bedrock Prompt Management.
 - `infra/` holds Terraform. Environment roots are `infra/envs/dev` and `infra/envs/prod`. Shared modules go in `infra/modules`. `infra/bootstrap` creates the remote state bucket.
 - `init.sh` at the repo root calls `scripts/init/init.sh`. That directory also holds `skills.sh`, `mcp.sh`, and the programs they call.
 - `init-market-watch.sh` applies this application's Terraform: `infra/bootstrap`, then `infra/envs/dev` or `infra/envs/prod`.
@@ -20,8 +20,10 @@ Do not run `terraform apply` or `terraform destroy`. `terraform fmt`, `terraform
 apps/web/             # React monitor
 apps/api/             # API deployed to ECS
 apps/agents/demo/     # Strands demo, deployed to AgentCore
+apps/agents/research/ # Strands agent that researches one stock
 packages/datafeed/    # market data clients
 packages/envfile/     # .env loader
+packages/prompt_management/ # Bedrock prompt loader
 infra/envs/dev/       # Terraform for the dev environment
 infra/modules/        # shared Terraform modules
 ```

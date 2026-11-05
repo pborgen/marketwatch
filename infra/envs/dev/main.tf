@@ -18,8 +18,9 @@ locals {
       [for path in fileset("${local.repo_root}/apps/agents/demo", "**") : "${local.repo_root}/apps/agents/demo/${path}"],
       [for path in fileset("${local.repo_root}/packages/datafeed", "**") : "${local.repo_root}/packages/datafeed/${path}"],
       [for path in fileset("${local.repo_root}/packages/envfile", "**") : "${local.repo_root}/packages/envfile/${path}"],
+      [for path in fileset("${local.repo_root}/packages/prompt_management", "**") : "${local.repo_root}/packages/prompt_management/${path}"],
     ) : path
-    if !endswith(path, ".pyc") && !strcontains(path, "__pycache__") && !strcontains(path, ".env")
+    if !endswith(path, ".pyc") && !strcontains(path, "__pycache__") && !strcontains(path, ".env") && !endswith(path, "/system_prompt.txt")
   ]
   agent_image_tag = substr(sha256(join("", [for path in sort(local.agent_source_files) : filesha256(path)])), 0, 12)
   # system_prompt.txt is published as a Bedrock prompt version. The image
@@ -29,6 +30,7 @@ locals {
       [for path in fileset("${local.repo_root}/apps/agents/current_events", "**") : "${local.repo_root}/apps/agents/current_events/${path}"],
       [for path in fileset("${local.repo_root}/packages/datafeed", "**") : "${local.repo_root}/packages/datafeed/${path}"],
       [for path in fileset("${local.repo_root}/packages/envfile", "**") : "${local.repo_root}/packages/envfile/${path}"],
+      [for path in fileset("${local.repo_root}/packages/prompt_management", "**") : "${local.repo_root}/packages/prompt_management/${path}"],
     ) : path
     if !endswith(path, ".pyc") && !strcontains(path, "__pycache__") && !strcontains(path, ".env") && !endswith(path, "/system_prompt.txt")
   ]
@@ -102,12 +104,18 @@ module "api" {
 module "agent" {
   source = "../../modules/agent_runtime"
 
-  name         = local.name
-  runtime_name = replace(local.name, "-", "_")
-  aws_region   = var.aws_region
-  image_tag    = local.agent_image_tag
-  repo_root    = local.repo_root
-  model_id     = "us.amazon.nova-micro-v1:0"
+  name                   = local.name
+  runtime_name           = replace(local.name, "-", "_")
+  aws_region             = var.aws_region
+  image_tag              = local.agent_image_tag
+  repo_root              = local.repo_root
+  model_id               = "us.amazon.nova-micro-v1:0"
+  bedrock_prompt_id      = aws_bedrockagent_prompt.demo_system.id
+  bedrock_prompt_version = local.demo_system_prompt_version["Version"]
+  bedrock_prompt_arns = [
+    aws_bedrockagent_prompt.demo_system.arn,
+    local.demo_system_prompt_version["Arn"],
+  ]
 }
 
 module "events_agent" {

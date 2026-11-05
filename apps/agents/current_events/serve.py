@@ -23,23 +23,6 @@ from collect import run_collection
 app = BedrockAgentCoreApp()
 _sessions: dict[str, Any] = {}
 
-
-def _session_id(context: Any) -> str:
-    session_id = getattr(context, "session_id", None)
-    if isinstance(session_id, str) and session_id:
-        return session_id
-    return "local"
-
-
-def _collect(payload: dict[str, Any]) -> dict[str, Any]:
-    topics = payload.get("topics") if isinstance(payload.get("topics"), str) else ""
-    limit = payload.get("limit") if isinstance(payload.get("limit"), int) else 8
-    include = payload.get("include_releases")
-    if not isinstance(include, bool):
-        include = True
-    return run_collection(topics, limit, include_releases=include)
-
-
 @app.entrypoint
 def invoke(payload: dict[str, Any], context: Any) -> dict[str, Any]:
     """Collect events, or handle one prompt. The prompt body is ``{"prompt": "..."}``."""
@@ -61,6 +44,22 @@ def invoke(payload: dict[str, Any], context: Any) -> dict[str, Any]:
     except Exception as exc:
         return {"error": f"The model call failed: {exc}"}
     return {"result": answer_text(result) or "(The model returned no text.)"}
+
+
+def _session_id(context: Any) -> str:
+    session_id = getattr(context, "session_id", None)
+    if isinstance(session_id, str) and session_id:
+        return session_id
+    return "local"
+
+
+def _collect(payload: dict[str, Any]) -> dict[str, Any]:
+    topics = payload.get("topics") if isinstance(payload.get("topics"), str) else ""
+    limit = payload.get("limit") if isinstance(payload.get("limit"), int) else 8
+    include = payload.get("include_releases")
+    if not isinstance(include, bool):
+        include = True
+    return run_collection(topics, limit, include_releases=include)
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ You do not write that loop. You write the tools and read what the model did.
 
 Run it from the repo root:
 
-    .venv/bin/python -m pip install -e packages/datafeed -e packages/envfile -r apps/agents/demo/requirements.txt
+    .venv/bin/python -m pip install -e packages/datafeed -e packages/envfile -e packages/prompt_management -r apps/agents/demo/requirements.txt
     .venv/bin/python apps/agents/demo/agent.py
     .venv/bin/python apps/agents/demo/agent.py "Quote AAPL and save it to my watchlist"
 
@@ -23,6 +23,11 @@ The model is Amazon Bedrock. The process uses your normal AWS credentials
 ``bedrock:InvokeModel`` and ``bedrock:Converse`` on the model below. Set the
 model in ``apps/agents/demo/.env`` as ``STRANDS_MODEL_ID``. A variable already
 set in the environment wins. Set the region with ``AWS_REGION``.
+
+The system prompt is stored in Amazon Bedrock Prompt Management.
+``system_prompt.txt`` is the text Terraform publishes. ``BEDROCK_PROMPT_ID``
+and ``BEDROCK_PROMPT_VERSION`` select a numbered version. Leave both unset
+to use the text file.
 
 Docs: https://strandsagents.com/docs/user-guide/sdk/quickstart/python/
 """
@@ -38,6 +43,7 @@ from typing import Any
 from datafeed.http import normalize_symbol, rejected
 from datafeed.yahoo.news import YahooFinanceRss
 from datafeed.yahoo.quote import YahooQuote
+from prompt_management.prompt import PROMPT_ID_ENV, PROMPT_VERSION_ENV, load_system_prompt, local_system_prompt
 from envfile import load_dotenv
 from strands import Agent, ToolContext, tool
 from strands.models import BedrockModel
@@ -50,20 +56,7 @@ MODEL_ID = os.environ.get("STRANDS_MODEL_ID", "us.amazon.nova-micro-v1:0")
 WATCHLIST = "watchlist"
 _QUOTES = YahooQuote()
 _NEWS = YahooFinanceRss()
-
-SYSTEM_PROMPT = """
-You are a market-watch assistant. A person is using you to learn how a
-Strands agent works, so call tools instead of answering from memory.
-
-Use quote for prices and headlines for news. Those figures come from delayed
-Yahoo Finance data. Say that the price is delayed. If a tool returns an error,
-report the error.
-
-The watchlist is agent state, kept outside the conversation. Read and change
-it only with the watchlist tools.
-
-Keep the reply to a few sentences.
-""".strip()
+_SYSTEM_PROMPT = Path(__file__).with_name("system_prompt.txt")
 
 
 def _watchlist(tool_context: ToolContext) -> list[str]:
@@ -170,6 +163,13 @@ def show_watchlist(tool_context: ToolContext) -> dict[str, Any]:
     return {"watchlist": _watchlist(tool_context)}
 
 
+def _prompt_text() -> str:
+    prompt_id = os.environ.get(PROMPT_ID_ENV, "").strip()
+    if not prompt_id:
+        return local_system_prompt(_SYSTEM_PROMPT)
+    return load_system_prompt(prompt_id, os.environ.get(PROMPT_VERSION_ENV, ""))
+
+
 def build_agent() -> Agent:
     """One agent keeps its conversation and its state until the process exits."""
     region = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
@@ -181,7 +181,7 @@ def build_agent() -> Agent:
     )
     return Agent(
         model=model,
-        system_prompt=SYSTEM_PROMPT,
+        system_prompt=_prompt_text(),
         tools=[quote, headlines, add_to_watchlist, remove_from_watchlist, show_watchlist],
         state={WATCHLIST: []},
         # The default handler prints tokens as they stream. This demo prints
