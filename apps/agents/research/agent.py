@@ -36,6 +36,7 @@ from datafeed.edgar.filings import EdgarFilings
 from datafeed.http import normalize_symbol, rejected
 from datafeed.seekingalpha.news import SeekingAlphaRss
 from datafeed.yahoo.news import YahooFinanceRss
+from datafeed.quotes import QuoteService
 from datafeed.yahoo.quote import YahooQuote
 from prompt_management.prompt import PROMPT_ID_ENV, PROMPT_VERSION_ENV, load_system_prompt, local_system_prompt
 from envfile import load_dotenv
@@ -52,10 +53,11 @@ _SYSTEM_PROMPT = Path(__file__).with_name("system_prompt.txt")
 class Feeds:
     """The market-data clients the tools call. Tests swap in a frozen book."""
 
-    quotes: Any = field(default_factory=YahooQuote)
+    quotes: Any = field(default_factory=QuoteService)
+    history: Any = field(default_factory=YahooQuote)
     yahoo_news: Any = field(default_factory=YahooFinanceRss)
     seeking_alpha: Any = field(default_factory=SeekingAlphaRss)
-    filings: Any = None
+    filings: Any = field(default_factory=EdgarFilings)
 
 
 _FEEDS = Feeds()
@@ -68,6 +70,7 @@ def using_feeds(quotes: Any, yahoo_news: Any, seeking_alpha: Any, filings: Any) 
     previous = _FEEDS
     _FEEDS = Feeds(
         quotes=quotes,
+        history=quotes,
         yahoo_news=yahoo_news,
         seeking_alpha=seeking_alpha,
         filings=filings,
@@ -131,7 +134,10 @@ def summarize_prices(prices: list[dict[str, Any]]) -> dict[str, Any]:
 
 @tool
 def quote(symbol: str) -> dict[str, Any]:
-    """Look up a delayed quote for one ticker.
+    """Look up a quote from the first feed that returns a price.
+
+    Nasdaq, TradingView, and Yahoo are tried in that order. A rate limit
+    or a miss from one feed tries the next. Yahoo prices are delayed.
 
     Args:
         symbol: Ticker such as AAPL or NASDAQ:AAPL.
@@ -143,6 +149,7 @@ def quote(symbol: str) -> dict[str, Any]:
     if row.get("error"):
         return row
     keep = (
+        "source",
         "symbol",
         "name",
         "price",
@@ -177,7 +184,7 @@ def price_history(symbol: str, months: int = 12) -> dict[str, Any]:
     span = max(1, min(int(months), 24))
     end = date.today()
     start = end - timedelta(days=span * 30)
-    found = _FEEDS.quotes.prices(ticker, start=start, end=end, interval="1d")
+    found = _FEEDS.history.prices(ticker, start=start, end=end, interval="1d")
     if found.get("error"):
         return found
     prices = found.get("prices") if isinstance(found.get("prices"), list) else []
